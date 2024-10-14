@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16.4-alpine
+    ports:
+      - "5432:5432"
+#    volumes:
+#      - ~/app/postgres:/var/lib/postgresql/test
+    environment:
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=course_manager_db
