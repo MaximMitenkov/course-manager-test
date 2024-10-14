@@ -20,29 +20,24 @@ public class CourseService {
 
     public Page<Course> getAllCourses(Pageable pageable) {
         Page<Course> courses = courseRepository.findAll(pageable);
-        List<CourseStatistics> currentStudents = courseRepository.countCurrentStudentsAll();
-        return supplyWithCurrentStudents(courses, currentStudents);
+        return supplyWithCurrentStudents(courses);
     }
 
     public Page<Course> getAllActiveCourses(Pageable pageable) {
         Page<Course> courses = courseRepository.findAllActive(pageable);
-        List<CourseStatistics> currentStudents = courseRepository.countCurrentStudentsActive();
-        return supplyWithCurrentStudents(courses, currentStudents);
+        return supplyWithCurrentStudents(courses);
     }
 
-    private Page<Course> supplyWithCurrentStudents(Page<Course> courses, List<CourseStatistics> currentStudents) {
+    private Page<Course> supplyWithCurrentStudents(Page<Course> courses) {
 
-        Map<Long, Long> currentStudentsCounters = currentStudents.stream()
+        List<Long> ids = courses.getContent().stream().map(Course::getId).toList();
+        Map<Long, Long> currentStudentsCounters =  courseRepository.countCurrentStudents(ids).stream()
                 .collect(Collectors.toMap(CourseStatistics::courseId, CourseStatistics::numberOfStudents));
 
         for (Course course : courses) {
             long courseId = course.getId();
             Long studentsCount = currentStudentsCounters.get(courseId);
-            if (studentsCount != null) {
-                course.setCurrentStudentsCount(studentsCount.intValue());
-            } else {
-                course.setCurrentStudentsCount(0);
-            }
+            course.setCurrentStudentsCount(studentsCount.intValue());
         }
         return courses;
     }

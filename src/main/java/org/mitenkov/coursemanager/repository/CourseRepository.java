@@ -22,18 +22,13 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("""
         select new org.mitenkov.coursemanager.dto.CourseStatistics(c.id, count(e.id))
         from Course c left join Enrollment e on e.course.id = c.id
+        where c.id in :ids
         group by c.id""")
-    List<CourseStatistics> countCurrentStudentsAll();
+    List<CourseStatistics> countCurrentStudents(List<Long> ids);
 
     @Query("""
-        select new org.mitenkov.coursemanager.dto.CourseStatistics(c.id, count(e.id))
-        from Course c left join Enrollment e on e.course.id = c.id
+        select c from Course c
         where current_timestamp between c.registrationStart and c.registrationEnd
-        group by c.id""")
-    List<CourseStatistics> countCurrentStudentsActive();
-
-    @Query(value ="""
-        select * from course where now() between registration_start and registration_end
-        """, nativeQuery = true)
+        """)
     Page<Course> findAllActive(Pageable pageable);
 }
